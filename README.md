@@ -30,3 +30,11 @@ create unique index cve_data_cve_id_uindex
     on cve_data (cve_id);
 
 ```
+
+
+## 启动爬虫
+
+1. 去 `cve_spider/cve_spider/pipelines.py` 中修改数据库连接地址
+2. 切换到 cve_spider 目录下
+3. scrapy crawl cve_detail
+

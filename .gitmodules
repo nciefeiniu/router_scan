@@ -1,0 +1,3 @@
+[submodule "scan_web"]
+	path = scan_web
+	url = https://github.com/nciefeiniu/scan_web.git

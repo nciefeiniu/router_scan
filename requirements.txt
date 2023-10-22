@@ -6,3 +6,7 @@ Scrapy~=2.11.0
 itemadapter~=0.8.0
 Twisted~=22.10.0
 pymysql~=1.1.0
+APScheduler==3.10.4
+django-apscheduler==0.6.2
+SQLAlchemy==2.0.22
+python3-nmap==1.6.0

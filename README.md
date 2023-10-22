@@ -38,3 +38,35 @@ create unique index cve_data_cve_id_uindex
 2. 切换到 cve_spider 目录下
 3. scrapy crawl cve_detail
 
+
+## 网站前端
+
+- Node 14
+- Vue2
+
+```shell
+npm run dev
+```
+
+## 网站后端
+
+- Python 3.8
+- MySql 8.0
+
+
+根据 IP 地址获取所在国家以及 GEO 使用的是 `https://ipapi.co/67.220.91.30/json/` 这个给API获取
+
+
+### 启动Apscheduler
+
+这是一个调度器，就是用户添加了扫描任务，都会加入这个调度器中去执行（也就是后台运行），不占用主线程资源
+
+```shell
+python manage.py runapshceduler
+```
+
+### 启动后端服务
+
+```shell
+python manage.py runserver 0.0.0.0:8000
+```

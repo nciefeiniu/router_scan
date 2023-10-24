@@ -10,3 +10,4 @@ APScheduler==3.10.4
 django-apscheduler==0.6.2
 SQLAlchemy==2.0.22
 python3-nmap==1.6.0
+requests~=2.31.0

@@ -31,6 +31,13 @@ create unique index cve_data_cve_id_uindex
 
 ```
 
+爬取到足够多的数据后，创建 `fulltext` 索引(需要点时间)
+
+```sql
+ALTER TABLE cve_data ADD FULLTEXT INDEX cve_data_fulltext (description) with parser ngram;
+```
+
+上面这一步是为了给后面匹配漏洞做准备
 
 ## 启动爬虫
 
@@ -53,9 +60,10 @@ npm run dev
 - Python 3.8
 - MySql 8.0
 
+---
 
-根据 IP 地址获取所在国家以及 GEO 使用的是 `https://ipapi.co/67.220.91.30/json/` 这个给API获取
-
+- 根据 IP 地址获取所在国家以及 GEO 使用的是 `http://ip-api.com/json/133.242.187.117?lang=zh-CN` 这个给API获取
+- 根据MAC地址获取到厂家是在 `https://maclookup.app/downloads/json-database` 这个网站上的数据获取到的
 
 ### 启动Apscheduler
 

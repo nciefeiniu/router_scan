@@ -1,3 +1,5 @@
+import traceback
+
 from django.shortcuts import render
 import re
 import json
@@ -11,9 +13,16 @@ from django.http.response import JsonResponse
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.executors.pool import ThreadPoolExecutor, ProcessPoolExecutor
-from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from django_apscheduler.jobstores import DjangoJobStore
+from django.db import transaction
+
 from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR
+
+from scan.models import ScanResult, ScanTask, RouterCVE
+from utils.ip2regon import ip2geo
+from utils.mac2producer import mac2producer
+from utils.task_id import get_task_id
+from scan.find_cve import find_cve
 
 jobstores = {
     'default': DjangoJobStore()
@@ -36,7 +45,7 @@ def my_listerner(event):
         print('任务正常运行中...')
 
 
-scheduler = BackgroundScheduler(jobstores=jobstores, executors=executors, job_defaults=job_defaults, daemon=False)
+scheduler = BackgroundScheduler(jobstores=jobstores, executors=executors, job_defaults=job_defaults)
 scheduler.add_listener(my_listerner, EVENT_JOB_ERROR | EVENT_JOB_EXECUTED)
 scheduler.start()
 
@@ -91,11 +100,65 @@ class LogoutView(View):
         return JsonResponse({'code': 20000, 'data': 'success'})
 
 
-def _scan_host(ip: str):
-    print(ip)
+def save_cve(device_name: str, task_id: str, scan_result_id):
+    """
+    根据cve找漏洞，并存储
+    """
+    if not device_name:
+        return
+    for row in find_cve(device_name):
+        RouterCVE(task_id=task_id, scan_result_id=scan_result_id, cve_id=row['cve_id'],
+                  cve_desc=row['description']).save()
+
+
+@transaction.atomic
+def _scan_host(ip: str, task_id, child_id):
     nmap_3 = nmap3.Nmap()
-    os_results = nmap_3.nmap_os_detection(ip, args='-T4')  # 需要root权限，这是获取主机的IP以及判断主机的类型
-    print(os_results)
+    os_results = nmap_3.nmap_os_detection(ip,
+                                          args='-T4 -PE -n --min-hostgroup 1024 --min-parallelism 1024 -sS')  # 需要root权限，这是获取主机的IP以及判断主机的类型
+    st = ScanTask.objects.select_for_update().get(scan_id=task_id)  # 加锁，防止多线程同时修改出问题
+    try:
+        for k, item in os_results.items():
+            if k in ('task_results', 'runtime', 'stats'):
+                continue
+            if not item:
+                continue
+            _mac = (item.get('macaddress', {}) or {}).get('addr')
+            os_info = item.get('osmatch', [])
+            for _ in os_info:
+                name = _.get('name')
+                os_family = _.get('osclass', {}).get('osfamily')
+                os_gen = _.get('osclass', {}).get('osgen')
+                os_type = _.get('osclass', {}).get('type')  # 只需要 WAP 和 broadband router or switch
+                if os_type not in ('WAP', 'broadband router', 'switch'):
+                    continue
+                os_vendor = _.get('osclass', {}).get('vendor')
+                resp = ip2geo(k)
+
+                _sr = ScanResult(ip_v4=k, device_name=name, os_name=name, type=os_type, vendor=os_vendor, os_gen=os_gen,
+                                 os_family=os_family, mac_address=_mac, producer=mac2producer(_mac), task_id=st.id)
+
+                if resp['status'] != 'success':
+                    _sr.country_name = ''
+                    _sr.latitude = 0
+                    _sr.longitude = 0
+                else:
+                    _sr.country_name = resp['country']
+                    _sr.latitude = resp['lat']
+                    _sr.longitude = resp['lon']
+                _sr.save()
+                save_cve(name, st.id, _sr.id)  # 查找CVE漏洞，并存储下来
+    except:
+        print(traceback.format_exc())
+    st.child_task_status[child_id] = True
+
+    _ok = True
+    for _v in st.child_task_status.values():
+        if _v is False:
+            _ok = False
+            break
+    st.status = 1
+    st.save()
 
 
 class ScanView(View):
@@ -129,20 +192,53 @@ class ScanView(View):
 
         _start_num = int(start_ip[-1])
         _end_num = int(end_ip[-1])
+
+        task_id = get_task_id()
+
+        child_tasks = {}
         if quickly == '1':
             # 快速扫描，把ip按段划分，然后塞给Apshceduler进行扫描
             _tmp = _start_num + self.ip_num
             while _tmp < _end_num:
-                scheduler.add_job(_scan_host, args=('.'.join(start_ip[:3]) + f'.{_start_num}-{_tmp}',), trigger='date',
+                _child_id = get_task_id()
+                child_tasks[_child_id] = False
+                scheduler.add_job(_scan_host,
+                                  args=('.'.join(start_ip[:3]) + f'.{_start_num}-{_tmp}', task_id, _child_id),
+                                  trigger='date',
                                   next_run_time=datetime.now() + timedelta(seconds=5),
                                   id=f'{int(datetime.now().timestamp())}_{_tmp}')
-                # self._scan_host('.'.join(start_ip) + f'-{_tmp}')
                 _start_num = _tmp
                 _tmp += self.ip_num
             else:
-                scheduler.add_job(_scan_host, args=('.'.join(start_ip[:3]) + f'.{_start_num}-{_end_num}',),
+                _child_id = get_task_id()
+                child_tasks[_child_id] = False
+                scheduler.add_job(_scan_host,
+                                  args=('.'.join(start_ip[:3]) + f'.{_start_num}-{_end_num}', task_id, _child_id),
                                   trigger='date',
                                   next_run_time=datetime.now() + timedelta(seconds=5),
                                   id=f'{int(datetime.now().timestamp())}_{_tmp}')
 
-        return JsonResponse({'code': 20000, 'message': '扫描中~'})
+        _st = ScanTask(scan_id=task_id, child_task_status=child_tasks)
+        _st.save()
+
+        return JsonResponse({'code': 20000, 'message': '扫描中~', 'data': {
+            'scan_id': _st.scan_id
+        }})
+
+
+class CheckScanStatus(View):
+    def get(self, request):
+        scan_id = request.GET.get('scan_id')
+        if not scan_id:
+            return JsonResponse({'code': 50000, 'message': '参数错误！'})
+        if not ScanTask.objects.filter(scan_id=scan_id).exists():
+            return JsonResponse({'code': 50000, 'message': '任务不存在！'})
+
+        _st = ScanTask.objects.get(scan_id=scan_id)
+
+        # if _st.status == 1:
+        #     ScanResult.objects.filter(task_id=_st.scan_id)
+
+        return JsonResponse({'code': 20000, 'data': {
+            'status': _st.status == 1,  # 0 是还在扫描，1是扫描完成
+        }})

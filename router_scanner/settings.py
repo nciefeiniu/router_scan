@@ -77,7 +77,7 @@ WSGI_APPLICATION = 'router_scanner.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'vicsb2',
+        'NAME': 'test5',
         'USER': 'root',
         'PASSWORD': '123456',
         'HOST': 'localhost',
@@ -127,3 +127,9 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# ApScheduler 配置
+
+APSCHEDULER_RUN_NOW_TIMEOUT = 60 * 30  # Seconds
+APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"

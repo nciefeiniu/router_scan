@@ -29,7 +29,7 @@ jobstores = {
     # 'default': SQLAlchemyJobStore(url='sqlite:///jobs.sqlite')
 }
 executors = {
-    'default': ThreadPoolExecutor(20),
+    'default': ThreadPoolExecutor(100),
     'processpool': ProcessPoolExecutor(5)
 }
 job_defaults = {
@@ -151,13 +151,14 @@ def _scan_host(ip: str, task_id, child_id):
     except:
         print(traceback.format_exc())
     st.child_task_status[child_id] = True
-
+    print(f'更新子任务: {child_id}     is True')
     _ok = True
     for _v in st.child_task_status.values():
         if _v is False:
             _ok = False
             break
-    st.status = 1
+    if _ok:
+        st.status = 1
     st.save()
 
 
@@ -199,23 +200,26 @@ class ScanView(View):
         if quickly == '1':
             # 快速扫描，把ip按段划分，然后塞给Apshceduler进行扫描
             _tmp = _start_num + self.ip_num
+            _seconds = 10
             while _tmp < _end_num:
                 _child_id = get_task_id()
                 child_tasks[_child_id] = False
                 scheduler.add_job(_scan_host,
                                   args=('.'.join(start_ip[:3]) + f'.{_start_num}-{_tmp}', task_id, _child_id),
                                   trigger='date',
-                                  next_run_time=datetime.now() + timedelta(seconds=5),
+                                  next_run_time=datetime.now() + timedelta(seconds=_seconds),
                                   id=f'{int(datetime.now().timestamp())}_{_tmp}')
                 _start_num = _tmp
                 _tmp += self.ip_num
+                _seconds += 1
             else:
+                _seconds += 1
                 _child_id = get_task_id()
                 child_tasks[_child_id] = False
                 scheduler.add_job(_scan_host,
                                   args=('.'.join(start_ip[:3]) + f'.{_start_num}-{_end_num}', task_id, _child_id),
                                   trigger='date',
-                                  next_run_time=datetime.now() + timedelta(seconds=5),
+                                  next_run_time=datetime.now() + timedelta(seconds=_seconds),
                                   id=f'{int(datetime.now().timestamp())}_{_tmp}')
 
         _st = ScanTask(scan_id=task_id, child_task_status=child_tasks)
@@ -236,9 +240,26 @@ class CheckScanStatus(View):
 
         _st = ScanTask.objects.get(scan_id=scan_id)
 
-        # if _st.status == 1:
-        #     ScanResult.objects.filter(task_id=_st.scan_id)
+        data = []
+        if _st.status == 1:
+            for row in ScanResult.objects.filter(task_id=_st.id):
+                data.append({
+                    'ip_v4': row.ip_v4,
+                    'device_name': row.device_name,
+                    'country': row.country_name,
+                    'latitude': row.latitude,
+                    'longitude': row.longitude,
+                    'children': [
+                        {
+                            'device_name': _.cve_id,
+                            'ip_v4': _.cve_desc,
+                            'country': '',
+
+                        } for _ in RouterCVE.objects.filter(scan_result_id=row.id)
+                    ]
+                })
 
         return JsonResponse({'code': 20000, 'data': {
-            'status': _st.status == 1,  # 0 是还在扫描，1是扫描完成
+            'ok': _st.status == 1,  # 0 是还在扫描，1是扫描完成
+            'cve_data': data,
         }})

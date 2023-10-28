@@ -263,3 +263,31 @@ class CheckScanStatus(View):
             'ok': _st.status == 1,  # 0 是还在扫描，1是扫描完成
             'cve_data': data,
         }})
+
+
+class IndexView(View):
+    def get(self, request):
+        vendor = {}
+        countries = {}
+        geos = []
+
+        for row in ScanResult.objects.values('ip_v4', 'device_name', 'vendor', 'country_name', 'longitude',
+                                             'latitude').distinct().all():
+            if row['vendor'] not in vendor:
+                vendor[row['vendor']] = 1
+            else:
+                vendor[row['vendor']] += 1
+            if row['country_name'] not in countries:
+                countries[row['country_name']] = 1
+            else:
+                countries[row['country_name']] += 1
+            geos.append([{
+                'coord': [116.40, 39.90]  # 起点坐标
+            }, {
+                'coord': [row['longitude'], row['latitude']]  # 终点坐标
+            }])
+        return JsonResponse({'code': 20000, 'data': {
+            'vendor': [{'value': v, 'name': k} for k ,v in vendor.items()],
+            'countries': countries,
+            'geos': geos
+        }})

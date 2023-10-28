@@ -37,7 +37,7 @@ def nmap_t():
 def nmap3_t():
     import nmap3
     nmap_3 = nmap3.Nmap()
-    os_results = nmap_3.nmap_os_detection("192.168.31.1-254", args='-T4 -PE -n --min-hostgroup 1024 --min-parallelism 1024 -sS')  # MOST BE ROOT
+    os_results = nmap_3.nmap_os_detection("192.168.1.1-254", args='-T4 -PE -n --min-hostgroup 1024 --min-parallelism 1024 -sS')  # MOST BE ROOT
     pprint(os_results)
 
     for k, item in os_results.items():
@@ -53,7 +53,6 @@ def nmap3_t():
             os_gen = _.get('osclass', {}).get('osgen')
             os_type = _.get('osclass', {}).get('type')
             os_vendor = _.get('osclass', {}).get('vendor')
-
 
 
 if __name__ == '__main__':

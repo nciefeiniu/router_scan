@@ -146,6 +146,7 @@ def _scan_host(ip: str, task_id, child_id):
                     _sr.country_name = resp['country']
                     _sr.latitude = resp['lat']
                     _sr.longitude = resp['lon']
+                    _sr.region = resp['continent']
                 _sr.save()
                 save_cve(name, st.id, _sr.id)  # 查找CVE漏洞，并存储下来
     except:
@@ -287,7 +288,7 @@ class IndexView(View):
                 'coord': [row['longitude'], row['latitude']]  # 终点坐标
             }])
         return JsonResponse({'code': 20000, 'data': {
-            'vendor': [{'value': v, 'name': k} for k ,v in vendor.items()],
-            'countries': countries,
+            'vendor': [{'value': v, 'name': k} for k, v in vendor.items()],
+            'countries': [[k for k, v in countries.items()], [v for k, v in countries.items()]],
             'geos': geos
         }})

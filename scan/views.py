@@ -1,3 +1,4 @@
+import uuid
 import traceback
 
 from django.shortcuts import render
@@ -133,8 +134,13 @@ def _scan_host(ip: str, task_id, child_id):
                 if os_type not in ('WAP', 'broadband router', 'switch'):
                     continue
                 os_vendor = _.get('osclass', {}).get('vendor')
-                resp = ip2geo(k)
 
+                if not ScanResult.objects.filter(ip_v4=k).exists():
+                    resp = ip2geo(k)
+                else:
+                    cache = ScanResult.objects.filter(ip_v4=k)[0]
+                    resp = {'status': 'success', 'country': cache.country_name, 'lat': cache.latitude,
+                            'lon': cache.longitude, 'continent': cache.region}
                 _sr = ScanResult(ip_v4=k, device_name=name, os_name=name, type=os_type, vendor=os_vendor, os_gen=os_gen,
                                  os_family=os_family, mac_address=_mac, producer=mac2producer(_mac), task_id=st.id)
 
@@ -242,9 +248,11 @@ class CheckScanStatus(View):
         _st = ScanTask.objects.get(scan_id=scan_id)
 
         data = []
+        geos = []
         if _st.status == 1:
             for row in ScanResult.objects.filter(task_id=_st.id):
                 data.append({
+                    'id': str(uuid.uuid4()),
                     'ip_v4': row.ip_v4,
                     'device_name': row.device_name,
                     'country': row.country_name,
@@ -252,6 +260,7 @@ class CheckScanStatus(View):
                     'longitude': row.longitude,
                     'children': [
                         {
+                            'id': str(uuid.uuid4()),
                             'device_name': _.cve_id,
                             'ip_v4': _.cve_desc,
                             'country': '',
@@ -259,10 +268,16 @@ class CheckScanStatus(View):
                         } for _ in RouterCVE.objects.filter(scan_result_id=row.id)
                     ]
                 })
+                geos.append([{
+                    'coord': [116.40, 39.90]  # 起点坐标
+                }, {
+                    'coord': [row.longitude, row.latitude]  # 终点坐标
+                }])
 
         return JsonResponse({'code': 20000, 'data': {
             'ok': _st.status == 1,  # 0 是还在扫描，1是扫描完成
             'cve_data': data,
+            'geos': geos
         }})
 
 

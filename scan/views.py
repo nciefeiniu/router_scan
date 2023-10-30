@@ -24,6 +24,7 @@ from utils.ip2regon import ip2geo
 from utils.mac2producer import mac2producer
 from utils.task_id import get_task_id
 from scan.find_cve import find_cve
+from utils.fscan_ip import scan_by_fscan
 
 jobstores = {
     'default': DjangoJobStore()
@@ -113,7 +114,7 @@ def save_cve(device_name: str, task_id: str, scan_result_id):
 
 
 @transaction.atomic
-def _scan_host(ip: str, task_id, child_id):
+def _scan_host(ip: str, task_id, child_id, ports: list):
     nmap_3 = nmap3.Nmap()
     os_results = nmap_3.nmap_os_detection(ip,
                                           args='-T4 -PE -n --min-hostgroup 1024 --min-parallelism 1024 -sS')  # 需要root权限，这是获取主机的IP以及判断主机的类型
@@ -142,7 +143,8 @@ def _scan_host(ip: str, task_id, child_id):
                     resp = {'status': 'success', 'country': cache.country_name, 'lat': cache.latitude,
                             'lon': cache.longitude, 'continent': cache.region}
                 _sr = ScanResult(ip_v4=k, device_name=name, os_name=name, type=os_type, vendor=os_vendor, os_gen=os_gen,
-                                 os_family=os_family, mac_address=_mac, producer=mac2producer(_mac), task_id=st.id)
+                                 os_family=os_family, mac_address=_mac, producer=mac2producer(_mac), task_id=st.id,
+                                 open_ports=','.join(ports))
 
                 if resp['status'] != 'success':
                     _sr.country_name = ''
@@ -185,6 +187,7 @@ class ScanView(View):
         start_ip = data.get('start_ip')
         end_ip = data.get('end_ip')
         quickly = data.get('quickly', '1')  # 如果 是1 就是进行快速扫描，如果是0就是慢速
+        proxy = data.get('proxy') or None
 
         if not check_ip(start_ip) or not check_ip(end_ip):
             return JsonResponse({'code': 500, 'message': 'IP地址不合法'})
@@ -204,30 +207,18 @@ class ScanView(View):
         task_id = get_task_id()
 
         child_tasks = {}
+        _seconds = 5
         if quickly == '1':
-            # 快速扫描，把ip按段划分，然后塞给Apshceduler进行扫描
-            _tmp = _start_num + self.ip_num
-            _seconds = 10
-            while _tmp < _end_num:
+            # 快速扫描，把用fscan扫描一次，然后把获取到的IP再给Nmap扫描，这里塞给Apshceduler进行扫描
+            for ip, ports in scan_by_fscan('.'.join(start_ip[:3]) + f'.{_start_num}-{_end_num}', proxy).items():
                 _child_id = get_task_id()
                 child_tasks[_child_id] = False
                 scheduler.add_job(_scan_host,
-                                  args=('.'.join(start_ip[:3]) + f'.{_start_num}-{_tmp}', task_id, _child_id),
+                                  args=(ip, task_id, _child_id, ports),
                                   trigger='date',
                                   next_run_time=datetime.now() + timedelta(seconds=_seconds),
-                                  id=f'{int(datetime.now().timestamp())}_{_tmp}')
-                _start_num = _tmp
-                _tmp += self.ip_num
+                                  id=f'{int(datetime.now().timestamp())}_{ip}')
                 _seconds += 1
-            else:
-                _seconds += 1
-                _child_id = get_task_id()
-                child_tasks[_child_id] = False
-                scheduler.add_job(_scan_host,
-                                  args=('.'.join(start_ip[:3]) + f'.{_start_num}-{_end_num}', task_id, _child_id),
-                                  trigger='date',
-                                  next_run_time=datetime.now() + timedelta(seconds=_seconds),
-                                  id=f'{int(datetime.now().timestamp())}_{_tmp}')
 
         _st = ScanTask(scan_id=task_id, child_task_status=child_tasks)
         _st.save()
@@ -258,12 +249,14 @@ class CheckScanStatus(View):
                     'country': row.country_name,
                     'latitude': row.latitude,
                     'longitude': row.longitude,
+                    'ports': row.open_ports,
                     'children': [
                         {
                             'id': str(uuid.uuid4()),
                             'device_name': _.cve_id,
                             'ip_v4': _.cve_desc,
                             'country': '',
+                            'ports': ''
 
                         } for _ in RouterCVE.objects.filter(scan_result_id=row.id)
                     ]

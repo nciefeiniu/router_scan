@@ -61,6 +61,7 @@ class ScanResult(models.Model):
     latitude = models.CharField('纬度', max_length=32, null=True, blank=True)
     longitude = models.CharField('精度', max_length=32, null=True, blank=True)
     region = models.CharField('哪个州', max_length=32, null=True, blank=True)
+    open_ports = models.CharField('开放的端口', max_length=512, null=True, blank=True)
 
     mac_address = models.CharField('Mac地址', max_length=255, null=True, blank=True)
     producer = models.CharField('制造商，根据MAC地址查询出来的', max_length=255, null=True, blank=True)

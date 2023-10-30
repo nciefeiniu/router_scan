@@ -1,0 +1,192 @@
+192.168.31.1:8080 open
+192.168.31.1:22 open
+192.168.31.202:139 open
+192.168.31.202:5432 open
+192.168.31.202:135 open
+192.168.31.202:445 open
+192.168.31.202:3306 open
+192.168.31.1:80 open
+192.168.31.202:7680 open
+192.168.31.145:5555 open
+192.168.31.202:6379 open
+192.168.31.1:8098 open
+192.168.31.171:445 open
+192.168.31.171:88 open
+192.168.31.171:5432 open
+192.168.31.171:22 open
+192.168.31.145:8881 open
+192.168.31.202:8888 open
+[+] Redis:192.168.31.202:6379 unauthorized file:D:\soft\redis5/dump.rdb
+[*] WebTitle: http://192.168.31.1       code:200 len:1769   title:Redmi路由器
+[*] WebTitle: http://192.168.31.1:8080  code:200 len:1769   title:Redmi路由器
+[*] WebTitle: http://192.168.31.202:8888 code:503 len:766    title:Charles Error Report
+[*] WebTitle: http://192.168.31.1:8098  code:200 len:1769   title:Redmi路由器
+[*] WebTitle: http://192.168.31.145:8881 code:404 len:0      title:None
+192.168.31.1:22 open
+192.168.31.171:22 open
+192.168.31.202:139 open
+192.168.31.202:135 open
+192.168.31.1:80 open
+192.168.31.145:5555 open
+192.168.31.202:5432 open
+192.168.31.202:3306 open
+192.168.31.202:7680 open
+192.168.31.202:445 open
+192.168.31.202:6379 open
+192.168.31.171:445 open
+192.168.31.171:88 open
+192.168.31.1:8098 open
+192.168.31.171:5432 open
+192.168.31.1:8080 open
+192.168.31.202:8888 open
+192.168.31.145:8881 open
+[+] Redis:192.168.31.202:6379 unauthorized file:D:\soft\redis5/dump.rdb
+[*] WebTitle: http://192.168.31.1       code:200 len:1769   title:Redmi路由器
+[*] WebTitle: http://192.168.31.202:8888 code:503 len:766    title:Charles Error Report
+[*] WebTitle: http://192.168.31.1:8098  code:200 len:1769   title:Redmi路由器
+[*] WebTitle: http://192.168.31.1:8080  code:200 len:1769   title:Redmi路由器
+[*] WebTitle: http://192.168.31.145:8881 code:404 len:0      title:None
+192.168.31.1:22 open
+192.168.31.202:445 open
+192.168.31.202:6379 open
+192.168.31.202:5432 open
+192.168.31.202:7680 open
+192.168.31.202:139 open
+192.168.31.171:5432 open
+192.168.31.145:5555 open
+192.168.31.171:22 open
+192.168.31.171:88 open
+192.168.31.171:445 open
+192.168.31.202:135 open
+192.168.31.202:3306 open
+192.168.31.1:8080 open
+192.168.31.1:80 open
+192.168.31.1:8098 open
+192.168.31.202:8888 open
+192.168.31.145:8881 open
+[+] Redis:192.168.31.202:6379 unauthorized file:D:\soft\redis5/dump.rdb
+[*] WebTitle: http://192.168.31.202:8888 code:503 len:766    title:Charles Error Report
+[*] WebTitle: http://192.168.31.1       code:200 len:1769   title:Redmi路由器
+[*] WebTitle: http://192.168.31.1:8098  code:200 len:1769   title:Redmi路由器
+[*] WebTitle: http://192.168.31.1:8080  code:200 len:1769   title:Redmi路由器
+[*] WebTitle: http://192.168.31.145:8881 code:404 len:0      title:None
+192.168.31.145:5555 open
+192.168.31.202:445 open
+192.168.31.202:139 open
+192.168.31.202:135 open
+192.168.31.202:6379 open
+192.168.31.202:5432 open
+192.168.31.1:80 open
+192.168.31.1:22 open
+192.168.31.202:3306 open
+192.168.31.202:7680 open
+192.168.31.1:8080 open
+192.168.31.171:5432 open
+192.168.31.171:88 open
+192.168.31.171:445 open
+192.168.31.1:8098 open
+192.168.31.171:22 open
+192.168.31.145:8881 open
+192.168.31.202:8888 open
+[+] Redis:192.168.31.202:6379 unauthorized file:D:\soft\redis5/dump.rdb
+[*] WebTitle: http://192.168.31.202:8888 code:503 len:766    title:Charles Error Report
+[*] WebTitle: http://192.168.31.1       code:200 len:1769   title:Redmi路由器
+[*] WebTitle: http://192.168.31.1:8080  code:200 len:1769   title:Redmi路由器
+[*] WebTitle: http://192.168.31.1:8098  code:200 len:1769   title:Redmi路由器
+[*] WebTitle: http://192.168.31.145:8881 code:404 len:0      title:None
+192.168.31.202:445 open
+192.168.31.202:5432 open
+192.168.31.202:139 open
+192.168.31.202:3306 open
+192.168.31.171:445 open
+192.168.31.202:135 open
+192.168.31.171:22 open
+192.168.31.1:22 open
+192.168.31.1:80 open
+192.168.31.1:8080 open
+192.168.31.171:5432 open
+192.168.31.145:5555 open
+192.168.31.202:6379 open
+192.168.31.202:7680 open
+192.168.31.171:88 open
+192.168.31.1:8098 open
+192.168.31.202:8888 open
+192.168.31.145:8881 open
+[+] Redis:192.168.31.202:6379 unauthorized file:D:\soft\redis5/dump.rdb
+[*] WebTitle: http://192.168.31.202:8888 code:503 len:766    title:Charles Error Report
+[*] WebTitle: http://192.168.31.1       code:200 len:1769   title:Redmi路由器
+[*] WebTitle: http://192.168.31.1:8080  code:200 len:1769   title:Redmi路由器
+[*] WebTitle: http://192.168.31.1:8098  code:200 len:1769   title:Redmi路由器
+[*] WebTitle: http://192.168.31.145:8881 code:404 len:0      title:None
+192.168.31.202:3306 open
+192.168.31.202:7680 open
+192.168.31.202:135 open
+192.168.31.202:6379 open
+192.168.31.202:445 open
+192.168.31.171:88 open
+192.168.31.202:139 open
+192.168.31.171:445 open
+192.168.31.145:5555 open
+192.168.31.1:8080 open
+192.168.31.1:22 open
+192.168.31.202:5432 open
+192.168.31.171:22 open
+192.168.31.1:80 open
+192.168.31.1:8098 open
+192.168.31.171:5432 open
+192.168.31.145:8881 open
+192.168.31.202:8888 open
+[+] Redis:192.168.31.202:6379 unauthorized file:D:\soft\redis5/dump.rdb
+[*] WebTitle: http://192.168.31.202:8888 code:503 len:766    title:Charles Error Report
+[*] WebTitle: http://192.168.31.1       code:200 len:1769   title:Redmi路由器
+[*] WebTitle: http://192.168.31.1:8080  code:200 len:1769   title:Redmi路由器
+[*] WebTitle: http://192.168.31.1:8098  code:200 len:1769   title:Redmi路由器
+[*] WebTitle: http://192.168.31.145:8881 code:404 len:0      title:None
+192.168.31.171:22 open
+192.168.31.202:445 open
+192.168.31.1:22 open
+192.168.31.1:8080 open
+192.168.31.202:135 open
+192.168.31.202:139 open
+192.168.31.1:80 open
+192.168.31.202:7680 open
+192.168.31.202:6379 open
+192.168.31.171:5432 open
+192.168.31.171:88 open
+192.168.31.202:5432 open
+192.168.31.145:5555 open
+192.168.31.202:3306 open
+192.168.31.171:445 open
+192.168.31.1:8098 open
+192.168.31.145:8881 open
+192.168.31.202:8888 open
+[+] Redis:192.168.31.202:6379 unauthorized file:D:\soft\redis5/dump.rdb
+[*] WebTitle: http://192.168.31.202:8888 code:503 len:766    title:Charles Error Report
+[*] WebTitle: http://192.168.31.1       code:200 len:1769   title:Redmi路由器
+[*] WebTitle: http://192.168.31.1:8080  code:200 len:1769   title:Redmi路由器
+[*] WebTitle: http://192.168.31.1:8098  code:200 len:1769   title:Redmi路由器
+[*] WebTitle: http://192.168.31.145:8881 code:404 len:0      title:None
+192.168.31.202:5432 open
+192.168.31.202:7680 open
+192.168.31.1:8080 open
+192.168.31.145:5555 open
+192.168.31.171:5432 open
+192.168.31.171:88 open
+192.168.31.202:6379 open
+192.168.31.171:445 open
+192.168.31.202:139 open
+192.168.31.202:135 open
+192.168.31.171:22 open
+192.168.31.202:3306 open
+192.168.31.202:445 open
+192.168.31.1:22 open
+192.168.31.1:80 open
+192.168.31.1:8098 open
+192.168.31.145:8881 open
+192.168.31.202:8888 open
+[+] Redis:192.168.31.202:6379 unauthorized file:D:\soft\redis5/dump.rdb
+[*] WebTitle: http://192.168.31.202:8888 code:503 len:766    title:Charles Error Report
+[*] WebTitle: http://192.168.31.1       code:200 len:1769   title:Redmi路由器
+[*] WebTitle: http://192.168.31.1:8080  code:200 len:1769   title:Redmi路由器
+[*] WebTitle: http://192.168.31.1:8098  code:200 len:1769   title:Redmi路由器
+[*] WebTitle: http://192.168.31.145:8881 code:404 len:0      title:None

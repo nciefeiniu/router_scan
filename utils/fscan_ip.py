@@ -11,14 +11,14 @@ elif platform.system().lower() == 'linux':
 
 
 def scan_by_fscan(ip: str, proxy=None) -> dict:
-    _fscan = fsacn + f' -h {ip} -nobr -no'
+    _fscan = [fsacn, '-h', ip, '-nobr', '-no']
     if proxy:
-        _fscan += f' -socks5 {proxy}'
+        _fscan += ['-socks5', proxy]
 
     print('use proxy:', proxy)
 
     try:
-        out_bytes = subprocess.check_output([fsacn, '-h', ip, '-nobr', '-no'], timeout=60 * 10)
+        out_bytes = subprocess.check_output(_fscan, timeout=60 * 10)
     except subprocess.TimeoutExpired as e:
         print(e)
         return {}

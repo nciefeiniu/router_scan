@@ -25,6 +25,7 @@ from utils.mac2producer import mac2producer
 from utils.task_id import get_task_id
 from scan.find_cve import find_cve
 from utils.fscan_ip import scan_by_fscan
+from utils.scan_by_nmap import ScanByNmap
 
 jobstores = {
     'default': DjangoJobStore()
@@ -114,10 +115,8 @@ def save_cve(device_name: str, task_id: str, scan_result_id):
 
 
 @transaction.atomic
-def _scan_host(ip: str, task_id, child_id, ports: list):
-    nmap_3 = nmap3.Nmap()
-    os_results = nmap_3.nmap_os_detection(ip,
-                                          args='-T4 -PE -n --min-hostgroup 1024 --min-parallelism 1024 -sS')  # 需要root权限，这是获取主机的IP以及判断主机的类型
+def _scan_host(ip: str, task_id, child_id):
+    os_results = ScanByNmap().scan_by_namp(ip)  # 需要root权限，这是获取主机的IP以及判断主机的类型
     st = ScanTask.objects.select_for_update().get(scan_id=task_id)  # 加锁，防止多线程同时修改出问题
     try:
         for k, item in os_results.items():
@@ -127,6 +126,8 @@ def _scan_host(ip: str, task_id, child_id, ports: list):
                 continue
             _mac = (item.get('macaddress', {}) or {}).get('addr')
             os_info = item.get('osmatch', [])
+            ports = [row.get('portid') for row in item.get('ports', [])]
+            ports = [_ for _ in ports if _]
             for _ in os_info:
                 name = _.get('name')
                 os_family = _.get('osclass', {}).get('osfamily')
@@ -187,7 +188,6 @@ class ScanView(View):
         start_ip = data.get('start_ip')
         end_ip = data.get('end_ip')
         quickly = data.get('quickly', '1')  # 如果 是1 就是进行快速扫描，如果是0就是慢速
-        proxy = data.get('proxy') or None
 
         if not check_ip(start_ip) or not check_ip(end_ip):
             return JsonResponse({'code': 500, 'message': 'IP地址不合法'})
@@ -207,18 +207,30 @@ class ScanView(View):
         task_id = get_task_id()
 
         child_tasks = {}
-        _seconds = 5
         if quickly == '1':
-            # 快速扫描，把用fscan扫描一次，然后把获取到的IP再给Nmap扫描，这里塞给Apshceduler进行扫描
-            for ip, ports in scan_by_fscan('.'.join(start_ip[:3]) + f'.{_start_num}-{_end_num}', proxy).items():
+            # 快速扫描，把ip按段划分，然后塞给Apshceduler进行扫描
+            _tmp = _start_num + self.ip_num
+            _seconds = 10
+            while _tmp < _end_num:
                 _child_id = get_task_id()
                 child_tasks[_child_id] = False
                 scheduler.add_job(_scan_host,
-                                  args=(ip, task_id, _child_id, ports),
+                                  args=('.'.join(start_ip[:3]) + f'.{_start_num}-{_tmp}', task_id, _child_id),
                                   trigger='date',
                                   next_run_time=datetime.now() + timedelta(seconds=_seconds),
-                                  id=f'{int(datetime.now().timestamp())}_{ip}')
+                                  id=f'{int(datetime.now().timestamp())}_{_tmp}')
+                _start_num = _tmp
+                _tmp += self.ip_num
                 _seconds += 1
+            else:
+                _seconds += 1
+                _child_id = get_task_id()
+                child_tasks[_child_id] = False
+                scheduler.add_job(_scan_host,
+                                  args=('.'.join(start_ip[:3]) + f'.{_start_num}-{_end_num}', task_id, _child_id),
+                                  trigger='date',
+                                  next_run_time=datetime.now() + timedelta(seconds=_seconds),
+                                  id=f'{int(datetime.now().timestamp())}_{_tmp}')
 
         _st = ScanTask(scan_id=task_id, child_task_status=child_tasks)
         _st.save()

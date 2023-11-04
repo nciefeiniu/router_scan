@@ -111,8 +111,8 @@ def save_cve(device_name: str, task_id: str, scan_result_id):
 
 
 @transaction.atomic
-def _scan_host(ip: str, task_id, child_id):
-    os_results = ScanByNmap().scan_by_namp(ip)  # 需要root权限，这是获取主机的IP以及判断主机的类型
+def _scan_host(ip: str, task_id, child_id, proxy):
+    os_results = ScanByNmap().scan_by_nmap(ip, proxy)  # 需要root权限，这是获取主机的IP以及判断主机的类型
     st = ScanTask.objects.select_for_update().get(scan_id=task_id)  # 加锁，防止多线程同时修改出问题
     try:
         for k, item in os_results.items():
@@ -183,8 +183,17 @@ class ScanView(View):
         data = json.loads(request.body)
         start_ip = data.get('start_ip')
         end_ip = data.get('end_ip')
+        proxy = data.get('proxy') or None
         quickly = data.get('quickly', '1')  # 如果 是1 就是进行快速扫描，如果是0就是慢速
 
+        proxy = proxy.replace(':', ' ')
+        with open('/etc/proxychains.conf', 'w', encoding='utf-8') as f:
+            f.write(f"""
+strict_chain
+tcp_read_time_out 1500000
+tcp_connect_time_out 8000000
+[ProxyList]
+socks5 {proxy}""")
         if not check_ip(start_ip) or not check_ip(end_ip):
             return JsonResponse({'code': 500, 'message': 'IP地址不合法'})
 
@@ -211,7 +220,7 @@ class ScanView(View):
                 _child_id = get_task_id()
                 child_tasks[_child_id] = False
                 scheduler.add_job(_scan_host,
-                                  args=('.'.join(start_ip[:3]) + f'.{_start_num}-{_tmp}', task_id, _child_id),
+                                  args=('.'.join(start_ip[:3]) + f'.{_start_num}-{_tmp}', task_id, _child_id, proxy),
                                   trigger='date',
                                   next_run_time=datetime.now() + timedelta(seconds=_seconds),
                                   id=f'{int(datetime.now().timestamp())}_{_tmp}')

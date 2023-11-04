@@ -1,10 +1,7 @@
-import uuid
-import traceback
-
-from django.shortcuts import render
 import re
 import json
-import nmap3
+import uuid
+import traceback
 
 from datetime import datetime, timedelta
 
@@ -24,7 +21,6 @@ from utils.ip2regon import ip2geo
 from utils.mac2producer import mac2producer
 from utils.task_id import get_task_id
 from scan.find_cve import find_cve
-from utils.fscan_ip import scan_by_fscan
 from utils.scan_by_nmap import ScanByNmap
 
 jobstores = {

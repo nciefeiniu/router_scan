@@ -232,7 +232,7 @@ socks5 {proxy}""")
                 _child_id = get_task_id()
                 child_tasks[_child_id] = False
                 scheduler.add_job(_scan_host,
-                                  args=('.'.join(start_ip[:3]) + f'.{_start_num}-{_end_num}', task_id, _child_id),
+                                  args=('.'.join(start_ip[:3]) + f'.{_start_num}-{_end_num}', task_id, _child_id, proxy),
                                   trigger='date',
                                   next_run_time=datetime.now() + timedelta(seconds=_seconds),
                                   id=f'{int(datetime.now().timestamp())}_{_tmp}')

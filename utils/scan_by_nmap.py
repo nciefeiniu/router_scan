@@ -5,7 +5,7 @@ from xml.etree import ElementTree as ET
 from nmap3 import NmapCommandParser
 
 
-ports = '21-23,80-90,135,137,161,389,443,445,873,1099,1433,1521,1900,2082,2083,2222,2375,2376,2601,2604,3128,3306,3311,3312,3389,4440,4848,5001,5432,5560,5900-5902,6082,6379,7001-7010,7778,8009,8080-8090,8649,8888,9000,9200,10000,11211,27017,28017,50000,51111,50030,50060'
+ports = '5555,8443,9000,8008,8009'
 
 
 class ScanByNmap:
@@ -23,7 +23,17 @@ class ScanByNmap:
                 raise Exception('Error during command: "' + ' '.join(cmd) + '"\n\n' + errs.decode('utf8'))
 
             # Response is bytes so decode the output and return
-            return output.decode('utf8').strip()
+            content =  output.decode('utf8').strip()
+            real_content = ''
+            for row in content.split('\n'):
+                if row.startswith('ProxyChains'):
+                    continue
+                if row.startswith('|S-chain|'):
+                    continue
+                else:
+                    real_content += row + '\n'
+
+            return real_content
 
     @staticmethod
     def get_xml_et(command_output):

@@ -27,9 +27,9 @@ class ScanByNmap:
         return ET.fromstring(command_output)
 
     def scan_by_nmap(self, ip: str, proxy: str = None):
-        _command = ['nmap', '-v', '-oX', '-', ip, '-O', '-T4', '-PE', '-n', '--min-hostgroup', '1024', '--min-parallelism', '1024', '-sS']
+        _command = ['nmap', '-v', '-oX', '-', ip, '-O', '-T4', '-sT', '-Pn']  # -sT -Pn 不走icmp和ping协议，因为socks的代理，只能使用tcp协议，
         if proxy:
-            _command.insert(0, 'proxychains4')
+            _command.insert(0, 'proxychains')
         xml_root = self.get_xml_et(self.run_command(_command))
 
         return NmapCommandParser(None).os_identifier_parser(xml_root)

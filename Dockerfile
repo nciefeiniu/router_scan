@@ -12,6 +12,8 @@ RUN apt update && apt install -y proxychains python3.8 python3-pip
 
 RUN apt install -y python3-dev default-libmysqlclient-dev build-essential pkg-config
 
+RUN apt install nmap
+
 RUN pip3 install -r requirements.txt -i https://mirrors.ustc.edu.cn/pypi/web/simple
 
 RUN python3.8 manage.py migrate

@@ -5,6 +5,9 @@ from xml.etree import ElementTree as ET
 from nmap3 import NmapCommandParser
 
 
+ports = '21-23,80-90,135,137,161,389,443,445,873,1099,1433,1521,1900,2082,2083,2222,2375,2376,2601,2604,3128,3306,3311,3312,3389,4440,4848,5001,5432,5560,5900-5902,6082,6379,7001-7010,7778,8009,8080-8090,8649,8888,9000,9200,10000,11211,27017,28017,50000,51111,50030,50060'
+
+
 class ScanByNmap:
     @staticmethod
     def run_command(cmd, timeout=None):
@@ -27,11 +30,9 @@ class ScanByNmap:
         return ET.fromstring(command_output)
 
     def scan_by_nmap(self, ip: str, proxy: str = None):
-        _command = ['nmap', '-v', '-oX', '-', ip, '-O', '-T1', '-sT', '-Pn', '--min-hostgroup', '1024',
+        _command = ['nmap', '-v', '-oX', '-', ip, '-O', '-T2', '-sT', '-Pn', '--min-hostgroup', '1024',
                     '--min-parallelism', '1', '-p',
-                    '21-23,80-90,135,137,161,389,443,445,873,1099,1433,1521,1900,2082,2083,2222,2375,2376,2601,2604,'
-                    '3128,3306,3311,3312,3389,4440,4848,5001,5432,5560,5900-5902,6082,6379,7001-7010,7778,8009,'
-                    '8080-8090,8649,8888,9000,9200,10000,11211,27017,28017,50000,51111,50030,50060']  # -sT -Pn 不走icmp和ping协议，因为socks的代理，只能使用tcp协议，
+                    ports]  # -sT -Pn 不走icmp和ping协议，因为socks的代理，只能使用tcp协议，
         if proxy:
             _command.insert(0, 'proxychains')
         xml_root = self.get_xml_et(self.run_command(_command))

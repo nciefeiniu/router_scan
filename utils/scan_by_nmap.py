@@ -27,7 +27,9 @@ class ScanByNmap:
         return ET.fromstring(command_output)
 
     def scan_by_nmap(self, ip: str, proxy: str = None):
-        _command = ['nmap', '-v', '-oX', '-', ip, '-O', '-T4', '-sT', '-Pn']  # -sT -Pn 不走icmp和ping协议，因为socks的代理，只能使用tcp协议，
+        _command = ['nmap', '-v', '-oX', '-', ip, '-O', '-T1', '-sT', '-Pn', '--min-hostgroup', '1024',
+                    '--min-parallelism', '1', '-p',
+                    '80,89,8000,9090,1433,1521,3306,5432,445,135,443,873,5984,6379,7001,7002,9200,9300,11211,27017,27018,50000,50070,50030,21,22,23,2601,3389']  # -sT -Pn 不走icmp和ping协议，因为socks的代理，只能使用tcp协议，
         if proxy:
             _command.insert(0, 'proxychains')
         xml_root = self.get_xml_et(self.run_command(_command))

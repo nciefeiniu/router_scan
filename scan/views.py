@@ -185,10 +185,10 @@ class ScanView(View):
         end_ip = data.get('end_ip')
         proxy = data.get('proxy') or None
         quickly = data.get('quickly', '1')  # 如果 是1 就是进行快速扫描，如果是0就是慢速
-
-        proxy = proxy.replace(':', ' ')
-        with open('/etc/proxychains.conf', 'w', encoding='utf-8') as f:
-            f.write(f"""
+        if proxy:
+            proxy = proxy.replace(':', ' ')
+            with open('/etc/proxychains.conf', 'w', encoding='utf-8') as f:
+                f.write(f"""
 strict_chain
 tcp_read_time_out 1500000
 tcp_connect_time_out 8000000

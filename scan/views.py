@@ -129,8 +129,8 @@ def _scan_host(ip: str, task_id, child_id, proxy):
                 os_family = _.get('osclass', {}).get('osfamily')
                 os_gen = _.get('osclass', {}).get('osgen')
                 os_type = _.get('osclass', {}).get('type')  # 只需要 WAP 和 broadband router or switch
-                if os_type not in ('WAP', 'broadband router', 'switch'):
-                    continue
+                # if os_type not in ('WAP', 'broadband router', 'switch'):
+                #     continue
                 os_vendor = _.get('osclass', {}).get('vendor')
 
                 if not ScanResult.objects.filter(ip_v4=k).exists():

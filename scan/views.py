@@ -113,7 +113,7 @@ def save_cve(device_name: str, task_id: str, scan_result_id):
 @transaction.atomic
 def _scan_host(ip: str, task_id, child_id, proxy):
     os_results = ScanByNmap().scan_by_nmap(ip, proxy)  # 需要root权限，这是获取主机的IP以及判断主机的类型
-    st = ScanTask.objects.select_for_update().get(scan_id=task_id)  # 加锁，防止多线程同时修改出问题
+    st = ScanTask.objects.get(scan_id=task_id)  # 加锁，防止多线程同时修改出问题
     try:
         for k, item in os_results.items():
             if k in ('task_results', 'runtime', 'stats'):
@@ -156,6 +156,8 @@ def _scan_host(ip: str, task_id, child_id, proxy):
                 save_cve(name, st.id, _sr.id)  # 查找CVE漏洞，并存储下来
     except:
         print(traceback.format_exc())
+
+    st = ScanTask.objects.select_for_update().get(scan_id=task_id)
     st.child_task_status[child_id] = True
     print(f'更新子任务: {child_id}     is True')
     _ok = True
